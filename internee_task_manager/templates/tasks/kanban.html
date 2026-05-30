@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Kanban Board — Intenee{% endblock %}
+{% block topbar_title %}Kanban Board{% endblock %}
+{% block topbar_subtitle %}Drag tasks to update their status{% endblock %}
+
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+  <a href="{% url 'tasks:create' %}" class="btn-primary-custom" style="font-size:13px;padding:8px 16px;">
+    <i class="fas fa-plus"></i> New Task
+  </a>
+</div>
+
+<div class="kanban-board">
+  <!-- Pending -->
+  <div class="kanban-column" style="border-top:3px solid var(--warning);">
+    <div class="kanban-header">
+      <span style="color:var(--warning);"><i class="fas fa-clock"></i></span>
+      Pending
+      <span class="kanban-count" style="color:var(--warning);">{{ pending_tasks.count }}</span>
+    </div>
+    <div class="kanban-body" id="col-pending" data-status="pending">
+      {% for task in pending_tasks %}
+      <div class="kanban-card" onclick="location.href='{% url 'tasks:detail' task.pk %}'" draggable="true" data-task-id="{{ task.pk }}">
+        <div class="kanban-card-title">{{ task.title|truncatechars:55 }}</div>
+        <div class="kanban-card-meta">
+          <span class="badge badge-{{ task.priority }}" style="font-size:10px;">{{ task.get_priority_display }}</span>
+          {% if task.assigned_to %}
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);">
+            <div class="user-avatar" style="width:18px;height:18px;border-radius:4px;font-size:8px;">{{ task.assigned_to.get_full_name|first|upper }}</div>
+            {{ task.assigned_to.username }}
+          </div>
+          {% endif %}
+        </div>
+        {% if task.deadline %}
+        <div style="margin-top:8px;font-size:11px;color:{% if task.is_overdue %}var(--danger){% else %}var(--text-muted){% endif %};">
+          <i class="fas fa-calendar-days" style="font-size:10px;"></i> {{ task.deadline|date:"M d" }}
+        </div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:30px 16px;color:var(--text-muted);font-size:12.5px;">No pending tasks</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- In Progress -->
+  <div class="kanban-column" style="border-top:3px solid var(--accent);">
+    <div class="kanban-header">
+      <span style="color:var(--accent);"><i class="fas fa-spinner"></i></span>
+      In Progress
+      <span class="kanban-count" style="color:var(--accent);">{{ in_progress_tasks.count }}</span>
+    </div>
+    <div class="kanban-body" id="col-in_progress" data-status="in_progress">
+      {% for task in in_progress_tasks %}
+      <div class="kanban-card" onclick="location.href='{% url 'tasks:detail' task.pk %}'" draggable="true" data-task-id="{{ task.pk }}">
+        <div class="kanban-card-title">{{ task.title|truncatechars:55 }}</div>
+        <div class="kanban-card-meta">
+          <span class="badge badge-{{ task.priority }}" style="font-size:10px;">{{ task.get_priority_display }}</span>
+          {% if task.assigned_to %}
+          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-muted);">
+            <div class="user-avatar" style="width:18px;height:18px;border-radius:4px;font-size:8px;">{{ task.assigned_to.get_full_name|first|upper }}</div>
+            {{ task.assigned_to.username }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:30px 16px;color:var(--text-muted);font-size:12.5px;">No active tasks</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="kanban-column" style="border-top:3px solid var(--success);">
+    <div class="kanban-header">
+      <span style="color:var(--success);"><i class="fas fa-check-double"></i></span>
+      Completed
+      <span class="kanban-count" style="color:var(--success);">{{ completed_tasks.count }}</span>
+    </div>
+    <div class="kanban-body" id="col-completed" data-status="completed">
+      {% for task in completed_tasks %}
+      <div class="kanban-card" onclick="location.href='{% url 'tasks:detail' task.pk %}'" draggable="true" data-task-id="{{ task.pk }}" style="opacity:0.75;">
+        <div class="kanban-card-title" style="text-decoration:line-through;color:var(--text-muted);">{{ task.title|truncatechars:55 }}</div>
+        <div class="kanban-card-meta">
+          <span class="badge badge-completed" style="font-size:10px;">Done</span>
+          {% if task.completed_at %}
+          <span style="font-size:10.5px;color:var(--text-muted);">{{ task.completed_at|date:"M d" }}</span>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:30px 16px;color:var(--text-muted);font-size:12.5px;">No completed tasks</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Drag and drop
+let draggedTask = null;
+
+document.querySelectorAll('.kanban-card').forEach(card => {
+  card.addEventListener('dragstart', e => {
+    draggedTask = card;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => card.style.opacity = '0.4', 0);
+  });
+  card.addEventListener('dragend', () => {
+    card.style.opacity = '';
+    draggedTask = null;
+  });
+});
+
+document.querySelectorAll('.kanban-body').forEach(col => {
+  col.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    col.style.background = 'rgba(91,106,240,0.05)';
+  });
+  col.addEventListener('dragleave', () => {
+    col.style.background = '';
+  });
+  col.addEventListener('drop', e => {
+    e.preventDefault();
+    col.style.background = '';
+    if (draggedTask) {
+      const taskId = draggedTask.dataset.taskId;
+      const newStatus = col.dataset.status;
+      col.appendChild(draggedTask);
+      fetch(`/tasks/${taskId}/status/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: 'status=' + newStatus
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
+{% endblock %}

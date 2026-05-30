@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Delete Task — Intenee{% endblock %}
+{% block topbar_title %}Delete Task{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:0 auto;">
+  <div class="card">
+    <div class="card-body" style="padding:32px;text-align:center;">
+      <div style="width:64px;height:64px;background:rgba(240,91,106,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+        <i class="fas fa-trash" style="font-size:24px;color:var(--danger);"></i>
+      </div>
+      <h3 style="margin-bottom:8px;">Delete Task?</h3>
+      <p style="color:var(--text-secondary);margin-bottom:8px;">You're about to permanently delete:</p>
+      <div style="background:var(--bg-secondary);border-radius:10px;padding:12px 16px;margin-bottom:24px;">
+        <strong>"{{ task.title }}"</strong>
+      </div>
+      <p style="color:var(--danger);font-size:13px;margin-bottom:24px;"><i class="fas fa-triangle-exclamation"></i> This action cannot be undone. All comments and activity logs will be removed.</p>
+      <form method="post" style="display:flex;gap:10px;justify-content:center;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary-custom" style="background:linear-gradient(135deg,#f05b6a,#c53030);">
+          <i class="fas fa-trash"></i> Yes, Delete
+        </button>
+        <a href="{% url 'tasks:detail' task.pk %}" class="btn-ghost">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

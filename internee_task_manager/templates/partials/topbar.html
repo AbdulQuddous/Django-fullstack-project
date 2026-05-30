@@ -1,0 +1,40 @@
+<div class="topbar">
+  <button class="btn-icon d-md-none" id="sidebarToggle" style="border: none; background: none;">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div>
+    <div class="topbar-title">{% block topbar_title %}Dashboard{% endblock %}</div>
+    <div class="topbar-subtitle">{% block topbar_subtitle %}Welcome back, {{ user.get_full_name }}{% endblock %}</div>
+  </div>
+  <div class="topbar-right">
+    <div class="search-bar d-none d-md-flex">
+      <i class="fas fa-search"></i>
+      <input type="text" class="form-control" placeholder="Search tasks..." id="globalSearch" style="width: 240px;">
+    </div>
+    <a href="{% url 'tasks:create' %}" class="btn-primary-custom" style="padding: 8px 16px; font-size: 13px;">
+      <i class="fas fa-plus"></i> New Task
+    </a>
+    <div class="dropdown">
+      <button class="btn-icon" data-bs-toggle="dropdown">
+        <i class="fas fa-bell"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><span class="dropdown-item text-muted">No new notifications</span></li>
+      </ul>
+    </div>
+    <div class="dropdown">
+      <div class="user-avatar" style="cursor: pointer;" data-bs-toggle="dropdown">
+        {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+        {% else %}
+          {{ user.get_full_name|first|upper }}
+        {% endif %}
+      </div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider" style="border-color: var(--border);"></li>
+        <li><a class="dropdown-item" href="{% url 'accounts:logout' %}" style="color: var(--danger) !important;"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
