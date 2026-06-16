@@ -1,0 +1,11 @@
+{% if messages %}
+<div style="{% if user.is_authenticated %}padding: 0 28px; padding-top: 16px;{% else %}position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 320px;{% endif %}">
+  {% for message in messages %}
+  <div class="alert-custom alert-{{ message.tags|default:'info' }}">
+    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+    {{ message }}
+    <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; cursor: pointer; color: inherit; opacity: 0.7; font-size: 16px;">×</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

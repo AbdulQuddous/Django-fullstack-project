@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.title }} — Intenee{% endblock %}
+{% block topbar_title %}Task Detail{% endblock %}
+{% block topbar_subtitle %}{{ task.title|truncatechars:60 }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Main Task Info -->
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-body" style="padding:28px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+          <h1 class="task-title-detail" style="flex:1;">{{ task.title }}</h1>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <a href="{% url 'tasks:update' task.pk %}" class="btn-ghost" style="font-size:12.5px;padding:7px 12px;"><i class="fas fa-pen"></i> Edit</a>
+            {% if user.is_admin_user or task.created_by == user %}
+            <a href="{% url 'tasks:delete' task.pk %}" class="btn-ghost" style="font-size:12.5px;padding:7px 12px;color:var(--danger);border-color:rgba(240,91,106,0.3);"><i class="fas fa-trash"></i></a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+          <span class="badge badge-{{ task.priority }}"><i class="fas fa-flag" style="margin-right:4px;"></i>{{ task.get_priority_display }}</span>
+          <span class="badge badge-{{ task.status|cut:' '|lower }}">{{ task.get_status_display }}</span>
+          {% if task.is_overdue %}<span class="badge badge-urgent"><i class="fas fa-triangle-exclamation" style="margin-right:4px;"></i>OVERDUE</span>{% endif %}
+          {% for tag in task.tags.all %}
+          <span style="display:inline-flex;align-items:center;background:rgba(91,106,240,0.1);color:var(--accent);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(91,106,240,0.2);">{{ tag.name }}</span>
+          {% endfor %}
+        </div>
+
+        {% if task.description %}
+        <div style="background:var(--bg-secondary);border-radius:10px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Description</div>
+          <p style="color:var(--text-secondary);line-height:1.7;white-space:pre-wrap;">{{ task.description }}</p>
+        </div>
+        {% endif %}
+
+        {% if task.notes %}
+        <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:16px;margin-bottom:20px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--warning);margin-bottom:10px;"><i class="fas fa-note-sticky"></i> Notes</div>
+          <p style="color:var(--text-secondary);line-height:1.7;">{{ task.notes }}</p>
+        </div>
+        {% endif %}
+
+        {% if task.attachment %}
+        <div style="display:flex;align-items:center;gap:10px;background:var(--bg-secondary);border-radius:10px;padding:12px 16px;">
+          <i class="fas fa-paperclip" style="color:var(--accent);"></i>
+          <a href="{{ task.attachment.url }}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:13.5px;">Download Attachment</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick Status Update -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-arrows-rotate" style="color:var(--accent);"></i> Update Status</div>
+      </div>
+      <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
+        {% for value, label in task.STATUS_CHOICES %}
+        <button onclick="updateStatus('{{ value }}')" class="btn-ghost" id="status-{{ value }}"
+          style="{% if task.status == value %}background:rgba(91,106,240,0.15);border-color:var(--accent);color:var(--accent);{% endif %}font-size:12.5px;padding:7px 14px;">
+          {{ label }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-comments" style="color:var(--accent);"></i> Comments
+          <span style="background:var(--bg-secondary);padding:2px 8px;border-radius:6px;font-size:12px;color:var(--text-muted);">{{ comments.count }}</span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div style="padding:20px;">
+          <form method="post">
+            {% csrf_token %}
+            {{ comment_form.content }}
+            <button type="submit" class="btn-primary-custom" style="margin-top:10px;font-size:13px;padding:8px 16px;">
+              <i class="fas fa-paper-plane"></i> Post Comment
+            </button>
+          </form>
+        </div>
+        {% if comments %}
+        <div style="border-top:1px solid var(--border);padding:0 20px;">
+          {% for comment in comments %}
+          <div class="comment-item">
+            <div class="comment-avatar">{{ comment.user.get_full_name|first|upper }}</div>
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-author">{{ comment.user.get_full_name }}</span>
+                <span class="comment-time">{{ comment.created_at|timesince }} ago</span>
+              </div>
+              <div class="comment-text">{{ comment.content }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border);">
+          No comments yet. Be the first to comment.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Meta -->
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-info-circle" style="color:var(--accent);"></i> Task Info</div>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="meta-row">
+          <i class="fas fa-user-tie" style="width:16px;color:var(--text-muted);"></i>
+          <span>Assigned to</span>
+          <strong>{{ task.assigned_to.get_full_name|default:'Unassigned' }}</strong>
+        </div>
+        <div class="meta-row">
+          <i class="fas fa-user-pen" style="width:16px;color:var(--text-muted);"></i>
+          <span>Created by</span>
+          <strong>{{ task.created_by.get_full_name }}</strong>
+        </div>
+        {% if task.deadline %}
+        <div class="meta-row">
+          <i class="fas fa-calendar-days" style="width:16px;color:var(--text-muted);"></i>
+          <span>Deadline</span>
+          <strong {% if task.is_overdue %}style="color:var(--danger);"{% endif %}>{{ task.deadline|date:"M d, Y H:i" }}</strong>
+        </div>
+        {% endif %}
+        <div class="meta-row">
+          <i class="fas fa-calendar-plus" style="width:16px;color:var(--text-muted);"></i>
+          <span>Created</span>
+          <strong>{{ task.created_at|date:"M d, Y" }}</strong>
+        </div>
+        <div class="meta-row">
+          <i class="fas fa-pen-to-square" style="width:16px;color:var(--text-muted);"></i>
+          <span>Updated</span>
+          <strong>{{ task.updated_at|timesince }} ago</strong>
+        </div>
+        {% if task.completed_at %}
+        <div class="meta-row">
+          <i class="fas fa-check-circle" style="width:16px;color:var(--success);"></i>
+          <span>Completed</span>
+          <strong style="color:var(--success);">{{ task.completed_at|date:"M d, Y" }}</strong>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-history" style="color:var(--accent);"></i> Activity Log</div>
+      </div>
+      <div class="card-body" style="padding:16px;">
+        {% if activity_logs %}
+        {% for log in activity_logs %}
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-text"><strong style="color:var(--text-primary);">{{ log.user.username }}</strong> {{ log.action }}</div>
+          <div class="activity-time" style="font-size:10.5px;">{{ log.created_at|timesince }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:20px 0;">No activity yet</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+function updateStatus(status) {
+  fetch("{% url 'tasks:update_status' task.pk %}", {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+    body: 'status=' + status
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      document.querySelectorAll('[id^="status-"]').forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.color = 'var(--text-secondary)';
+      });
+      const activeBtn = document.getElementById('status-' + status);
+      if (activeBtn) {
+        activeBtn.style.background = 'rgba(91,106,240,0.15)';
+        activeBtn.style.borderColor = 'var(--accent)';
+        activeBtn.style.color = 'var(--accent)';
+      }
+    }
+  });
+}
+</script>
+{% endblock %}
+{% endblock %}

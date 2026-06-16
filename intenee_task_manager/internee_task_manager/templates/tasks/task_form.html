@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Task — Intenee{% endblock %}
+{% block topbar_title %}{{ action }} Task{% endblock %}
+{% block topbar_subtitle %}{% if task %}Editing: {{ task.title }}{% else %}Fill in the details below{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-pen-to-square" style="color:var(--accent);"></i> Task Details</div>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Task Title <span style="color:var(--danger);">*</span></label>
+              {{ form.title }}
+              {% if form.title.errors %}<div style="color:var(--danger);font-size:12px;margin-top:4px;">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              {{ form.description }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Assign To</label>
+              {{ form.assigned_to }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Priority</label>
+              {{ form.priority }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              {{ form.status }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Deadline</label>
+              {{ form.deadline }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Attachment</label>
+              {{ form.attachment }}
+              {% if task.attachment %}
+              <div style="margin-top:6px;font-size:12.5px;color:var(--text-secondary);">
+                <i class="fas fa-paperclip"></i> Current: <a href="{{ task.attachment.url }}" target="_blank" style="color:var(--accent);">{{ task.attachment.name|slice:'17:' }}</a>
+              </div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Notes</label>
+              {{ form.notes }}
+            </div>
+          </div>
+
+          <div style="margin-top:20px;display:flex;gap:10px;">
+            <button type="submit" class="btn-primary-custom">
+              <i class="fas fa-{% if task %}save{% else %}plus{% endif %}"></i>
+              {% if task %}Save Changes{% else %}Create Task{% endif %}
+            </button>
+            <a href="{% if task %}{% url 'tasks:detail' task.pk %}{% else %}{% url 'tasks:list' %}{% endif %}" class="btn-ghost">
+              <i class="fas fa-xmark"></i> Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <!-- Tags -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-tags" style="color:var(--accent);"></i> Tags</div>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          {% for checkbox in form.tags %}
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12.5px;transition:all 0.15s;" class="tag-label">
+            {{ checkbox.tag }}
+            <span>{{ checkbox.choice_label }}</span>
+          </label>
+          {% empty %}
+          <p style="color:var(--text-muted);font-size:13px;">No tags available. <a href="/admin/tasks/tag/add/" style="color:var(--accent);">Add tags</a></p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-lightbulb" style="color:var(--warning);"></i> Tips</div>
+      </div>
+      <div class="card-body" style="padding:16px;">
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+          <li style="display:flex;gap:8px;font-size:12.5px;color:var(--text-secondary);">
+            <i class="fas fa-circle-check" style="color:var(--success);margin-top:2px;"></i>
+            Be specific with the task title
+          </li>
+          <li style="display:flex;gap:8px;font-size:12.5px;color:var(--text-secondary);">
+            <i class="fas fa-circle-check" style="color:var(--success);margin-top:2px;"></i>
+            Set realistic deadlines
+          </li>
+          <li style="display:flex;gap:8px;font-size:12.5px;color:var(--text-secondary);">
+            <i class="fas fa-circle-check" style="color:var(--success);margin-top:2px;"></i>
+            Use priority levels to focus effort
+          </li>
+          <li style="display:flex;gap:8px;font-size:12.5px;color:var(--text-secondary);">
+            <i class="fas fa-circle-check" style="color:var(--success);margin-top:2px;"></i>
+            Add notes for context
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Highlight selected tags
+document.querySelectorAll('.tag-label input').forEach(cb => {
+  const label = cb.closest('label');
+  const update = () => {
+    if (cb.checked) {
+      label.style.borderColor = 'var(--accent)';
+      label.style.background = 'rgba(91,106,240,0.1)';
+      label.style.color = 'var(--accent)';
+    } else {
+      label.style.borderColor = 'var(--border)';
+      label.style.background = 'transparent';
+      label.style.color = 'var(--text-secondary)';
+    }
+  };
+  update();
+  cb.addEventListener('change', update);
+});
+</script>
+{% endblock %}
+{% endblock %}

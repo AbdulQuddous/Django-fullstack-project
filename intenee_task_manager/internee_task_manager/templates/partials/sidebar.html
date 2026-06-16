@@ -1,0 +1,90 @@
+{% load static %}
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">Inten<span>ee</span></div>
+  </div>
+
+  <div style="padding: 16px 0; flex: 1;">
+    <div class="sidebar-section-label">Main</div>
+    <nav>
+      <div class="nav-item">
+        <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+          <i class="fas fa-grid-2"></i> Dashboard
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:list' %}" class="nav-link {% if request.resolver_match.app_name == 'tasks' and request.resolver_match.url_name == 'list' %}active{% endif %}">
+          <i class="fas fa-list-check"></i> My Tasks
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:kanban' %}" class="nav-link {% if request.resolver_match.url_name == 'kanban' %}active{% endif %}">
+          <i class="fas fa-columns"></i> Kanban Board
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-section-label" style="margin-top: 8px;">Tasks</div>
+    <nav>
+      <div class="nav-item">
+        <a href="{% url 'tasks:create' %}" class="nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}">
+          <i class="fas fa-circle-plus"></i> Create Task
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:list' %}?status=pending" class="nav-link">
+          <i class="fas fa-clock"></i> Pending
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:list' %}?status=in_progress" class="nav-link">
+          <i class="fas fa-spinner"></i> In Progress
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:list' %}?status=completed" class="nav-link">
+          <i class="fas fa-check-circle"></i> Completed
+        </a>
+      </div>
+    </nav>
+
+    {% if user.is_admin_user %}
+    <div class="sidebar-section-label" style="margin-top: 8px;">Admin</div>
+    <nav>
+      <div class="nav-item">
+        <a href="{% url 'dashboard:admin' %}" class="nav-link">
+          <i class="fas fa-chart-bar"></i> Analytics
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="{% url 'tasks:export_csv' %}" class="nav-link">
+          <i class="fas fa-file-export"></i> Export CSV
+        </a>
+      </div>
+      <div class="nav-item">
+        <a href="/admin/" class="nav-link">
+          <i class="fas fa-cog"></i> Django Admin
+        </a>
+      </div>
+    </nav>
+    {% endif %}
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="{% url 'accounts:profile' %}" class="user-card">
+      <div class="user-avatar">
+        {% if user.profile_picture %}
+          <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+        {% else %}
+          {{ user.get_full_name|first|upper }}
+        {% endif %}
+      </div>
+      <div>
+        <div class="user-name">{{ user.get_full_name|truncatechars:20 }}</div>
+        <div class="user-role">{{ user.get_role_display }}</div>
+      </div>
+      <i class="fas fa-chevron-right" style="margin-left: auto; font-size: 11px; color: var(--text-muted);"></i>
+    </a>
+  </div>
+</div>

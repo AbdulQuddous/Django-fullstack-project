@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Profile — Intenee{% endblock %}
+{% block topbar_title %}My Profile{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body" style="text-align:center;padding:32px 20px;">
+        <div style="position:relative;display:inline-block;margin-bottom:16px;">
+          <div class="user-avatar" style="width:80px;height:80px;border-radius:20px;font-size:28px;margin:0 auto;">
+            {% if user.profile_picture %}
+              <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+            {% else %}
+              {{ user.get_full_name|first|upper }}
+            {% endif %}
+          </div>
+          {% if user.is_admin_user %}
+          <span class="badge badge-urgent" style="position:absolute;bottom:-4px;right:-4px;font-size:9px;padding:2px 6px;">ADMIN</span>
+          {% endif %}
+        </div>
+        <h3 style="font-size:18px;margin-bottom:4px;">{{ user.get_full_name }}</h3>
+        <p style="color:var(--text-secondary);font-size:13px;margin-bottom:4px;">@{{ user.username }}</p>
+        <p style="color:var(--text-muted);font-size:12.5px;">{{ user.email }}</p>
+        {% if user.bio %}
+        <p style="color:var(--text-secondary);font-size:13px;margin-top:12px;line-height:1.5;">{{ user.bio }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-body" style="padding:20px;">
+        <h5 style="font-size:14px;margin-bottom:16px;color:var(--text-secondary);">Task Overview</h5>
+        <div class="row g-3">
+          <div class="col-6">
+            <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--accent);">{{ total_tasks }}</div>
+              <div style="font-size:11px;color:var(--text-muted);">Total</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--success);">{{ completed_tasks }}</div>
+              <div style="font-size:11px;color:var(--text-muted);">Done</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--warning);">{{ pending_tasks }}</div>
+              <div style="font-size:11px;color:var(--text-muted);">Pending</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div style="background:var(--bg-secondary);border-radius:10px;padding:14px;text-align:center;">
+              <div style="font-size:22px;font-weight:800;color:var(--info);">{{ in_progress_tasks }}</div>
+              <div style="font-size:11px;color:var(--text-muted);">Active</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-header-title"><i class="fas fa-user-pen" style="color:var(--accent);"></i> Edit Profile</div>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              {{ form.full_name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone</label>
+              {{ form.phone }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Profile Picture</label>
+              {{ form.profile_picture }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Bio</label>
+              {{ form.bio }}
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-primary-custom">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+              <a href="{% url 'accounts:logout' %}" class="btn-ghost" style="margin-left:8px;color:var(--danger);border-color:rgba(240,91,106,0.3);">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
