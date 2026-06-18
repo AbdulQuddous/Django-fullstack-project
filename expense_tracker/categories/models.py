@@ -3,12 +3,6 @@ from django.db import models
 
 
 class Category(models.Model):
-    """
-    A category transactions are tagged with, e.g. "Groceries" or "Salary".
-
-    user=None marks a global default category seeded for every account
-    (see the 0002 data migration). Users can also create their own.
-    """
 
     INCOME = 'INCOME'
     EXPENSE = 'EXPENSE'
